@@ -12,13 +12,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
-// ✅ Use only once
+// Routes
 app.use("/api/auth", authRoutes);
+app.use('/api/items', itemsRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
-// Optional: Move these two to auth.js or keep them here
+// Optionally remove these if handled in authRoutes
 app.post('/api/signup', (req, res) => {
   console.log(req.body);
   res.json({ message: "User signed up successfully!" });
@@ -29,18 +32,12 @@ app.post('/api/login', (req, res) => {
   res.json({ message: "Login successful!" });
 });
 
-app.use('/api/items', itemsRoutes);
-app.use('/api/feedback', feedbackRoutes);
-
-// ✅ MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => {
-  console.log('✅ Connected to MongoDB');
-  app.listen(PORT, () => {
-    console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-  });
-})
-.catch(err => console.error('❌ MongoDB connection error:', err));
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB');
+    app.listen(PORT, () => {
+      console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch(err => console.error('❌ MongoDB connection error:', err));
