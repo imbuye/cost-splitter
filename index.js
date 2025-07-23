@@ -12,8 +12,24 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ✅ CORS configuration to support both localhost and Netlify frontend
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://heartfelt-youtiao-4ed1ed.netlify.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
 // Routes
@@ -21,7 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use('/api/items', itemsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
-// Optionally remove these if handled in authRoutes
+// (Optional: remove these if handled inside authRoutes)
 app.post('/api/signup', (req, res) => {
   console.log(req.body);
   res.json({ message: "User signed up successfully!" });
@@ -32,7 +48,7 @@ app.post('/api/login', (req, res) => {
   res.json({ message: "Login successful!" });
 });
 
-// Connect to MongoDB
+// Connect to MongoDB and start server
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
